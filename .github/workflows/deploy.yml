@@ -37,5 +37,13 @@ jobs:
 
     - name: Deploy to S3
       run: |
-        aws s3 sync ./ s3://${{ secrets.S3_BUCKET }} --delete
-        # Nếu có build folder thì thay './' bằng './build' hoặc './dist'
+        aws s3 sync ./ s3://${{ secrets.S3_BUCKET }} \
+          --delete \
+          --exclude ".git/*" \
+          --exclude ".github/*" \
+          --exclude ".gitignore" \
+          --exclude "node_modules/*" \
+          --exclude "README.md" \
+          --exclude ".env*"
+        # Nếu có build folder thì sử dụng:
+        # aws s3 sync ./build s3://${{ secrets.S3_BUCKET }} --delete
