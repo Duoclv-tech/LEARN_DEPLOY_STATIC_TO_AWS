@@ -1,49 +1,69 @@
+# Tên của workflow sẽ hiển thị trong tab Actions của GitHub
 name: Deploy to S3
 
+# Định nghĩa các event kích hoạt workflow
 on:
+  # Kích hoạt khi có push vào nhánh master
   push:
     branches:
       - master
+  # Kích hoạt khi có pull request vào nhánh master
   pull_request:
     branches:
       - master
 
+# Định nghĩa các công việc (jobs) cần thực hiện
 jobs:
+  # Tên job là 'deploy'
   deploy:
+    # Chọn môi trường chạy job (ở đây là Ubuntu phiên bản mới nhất)
     runs-on: ubuntu-latest
     
+    # Các bước (steps) thực hiện trong job
     steps:
+    # Bước 1: Check out code từ repository
     - name: Checkout repository
+      # Sử dụng action checkout có sẵn của GitHub
       uses: actions/checkout@v2
 
-    # Nếu project cần build (ví dụ: React, Vue...)
+    # Bước 2 (Optional): Setup Node.js cho các project cần build
     # - name: Setup Node.js
     #   uses: actions/setup-node@v2
     #   with:
-    #     node-version: '18'
+    #     node-version: '18'  # Chọn version Node.js
     
+    # Bước 3 (Optional): Cài đặt dependencies
     # - name: Install dependencies
     #   run: npm install
     
+    # Bước 4 (Optional): Build project
     # - name: Build project
     #   run: npm run build
 
+    # Bước 5: Cấu hình credentials AWS
     - name: Configure AWS Credentials
+      # Sử dụng action configure-aws-credentials của AWS
       uses: aws-actions/configure-aws-credentials@v1
       with:
+        # Lấy các giá trị từ GitHub Secrets
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-southeast-1  # Thay đổi region phù hợp
+        aws-region: ap-southeast-1  # Region của S3 bucket
 
+    # Bước 6: Deploy lên S3
     - name: Deploy to S3
       run: |
+        # Sử dụng lệnh aws s3 sync để đồng bộ files
         aws s3 sync ./ s3://${{ secrets.S3_BUCKET }} \
+          # Xóa các file trong bucket không còn trong source
           --delete \
-          --exclude ".git/*" \
-          --exclude ".github/*" \
-          --exclude ".gitignore" \
-          --exclude "node_modules/*" \
-          --exclude "README.md" \
-          --exclude ".env*"
-        # Nếu có build folder thì sử dụng:
+          # Loại trừ các file và thư mục không cần thiết
+          --exclude ".git/*" \          # Loại bỏ thư mục git
+          --exclude ".github/*" \        # Loại bỏ thư mục GitHub Actions
+          --exclude ".gitignore" \       # Loại bỏ file gitignore
+          --exclude "node_modules/*" \   # Loại bỏ thư mục node modules
+          --exclude "README.md" \        # Loại bỏ file readme
+          --exclude ".env*"              # Loại bỏ các file environment
+
+        # Lưu ý: Nếu project có build, thay './'' bằng './build' hoặc './dist'
         # aws s3 sync ./build s3://${{ secrets.S3_BUCKET }} --delete
