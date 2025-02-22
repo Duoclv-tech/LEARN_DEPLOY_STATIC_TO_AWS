@@ -53,17 +53,15 @@ jobs:
     # Bước 6: Deploy lên S3
     - name: Deploy to S3
       run: |
-        # Sử dụng lệnh aws s3 sync để đồng bộ files
         aws s3 sync ./ s3://${{ secrets.S3_BUCKET }} \
-          # Xóa các file trong bucket không còn trong source
           --delete \
-          # Loại trừ các file và thư mục không cần thiết
-          --exclude ".git/*" \          # Loại bỏ thư mục git
-          --exclude ".github/*" \        # Loại bỏ thư mục GitHub Actions
-          --exclude ".gitignore" \       # Loại bỏ file gitignore
-          --exclude "node_modules/*" \   # Loại bỏ thư mục node modules
-          --exclude "README.md" \        # Loại bỏ file readme
-          --exclude ".env*"              # Loại bỏ các file environment
+          --exclude ".git/*" \
+          --exclude ".github/*" \
+          --exclude ".gitignore" \
+          --exclude "node_modules/*" \
+          --exclude "README.md" \
+          --exclude ".env*"
 
-        # Lưu ý: Nếu project có build, thay './'' bằng './build' hoặc './dist'
-        # aws s3 sync ./build s3://${{ secrets.S3_BUCKET }} --delete
+    # Sử dụng lệnh aws s3 sync để đồng bộ files
+    # Lưu ý: Nếu project có build, thay './'' bằng './build' hoặc './dist'
+    # aws s3 sync ./build s3://${{ secrets.S3_BUCKET }} --delete
